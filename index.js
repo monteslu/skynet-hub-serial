@@ -19,12 +19,15 @@ function Plugin(messenger, options){
   this.lastSend = 0;
 
   this.serialPort.on('data', function(data){
+    //console.log('serial data', data);
     if(self.buffer){
       self.buffer = Buffer.concat([self.buffer, data]);
     }else{
       self.buffer = data;
     }
   });
+
+  this.transmitData();
 
   return this;
 }
@@ -45,7 +48,7 @@ var optionsSchema = {
       required: false
     },
     sendUuid: {
-      type: 'string|array',
+      type: 'string',
       required: true
     }
   }
@@ -60,7 +63,8 @@ Plugin.prototype.onMessage = function(data){
   var payload = data.payload;
   if(data.payload && typeof data.payload === 'string'){
     try{
-      this.serialPort.write(new Buffer(data, 'base64'));
+      console.log('writing data to ', this.options.serialDevice, data.payload);
+      this.serialPort.write(new Buffer(data.payload, 'base64'));
     }catch(exp){
       console.log('error reading message', exp);
     }
@@ -69,20 +73,21 @@ Plugin.prototype.onMessage = function(data){
 };
 
 Plugin.prototype.transmitData = function(){
+  var self = this;
   var delta = Date.now() - this.lastCheck;
   this.lastCheck = Date.now();
   this.lastSend += delta;
   if(this.lastSend > SEND_INTERVAL && this.buffer){
     this.lastSend = 0;
     var binaryStr = this.buffer.toString('base64');
-    console.log('sending data', binaryStr);
+    console.log('sending data to', this.options.sendUuid, binaryStr);
     this.buffer = null;
     this.messenger.send({
       devices : this.options.sendUuid,
       payload : binaryStr
     });
   }
-  setTimeout(this.transmitData, CHECK_INTERVAL);
+  setTimeout(function(){ self.transmitData(); }, CHECK_INTERVAL);
 };
 
 Plugin.prototype.destroy = function(){
