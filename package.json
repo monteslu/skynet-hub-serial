@@ -1,0 +1,18 @@
+{
+  "name": "skynet-hub-serial",
+  "version": "0.1.0",
+  "description": "Skynet Hub plugin for reading and writing to a serialport",
+  "keywords": [
+    "skynet-plugin"
+  ],
+  "repository": "git@github.com:monteslu/skynet-hub-serial.git",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Luis Montes",
+  "license": "MIT",
+  "dependencies": {
+    "serialport": "*"
+  }
+}
